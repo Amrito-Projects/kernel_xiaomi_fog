@@ -31,7 +31,9 @@
 #include <linux/ima.h>
 #include <linux/dnotify.h>
 #include <linux/compat.h>
+#ifdef CONFIG_SUS_FS
 #include <linux/suspicious.h>
+#endif
 
 #include "internal.h"
 
@@ -130,6 +132,7 @@ long do_sys_truncate(const char __user *pathname, loff_t length)
 	unsigned int lookup_flags = LOOKUP_FOLLOW;
 	struct path path;
 	int error;
+#ifdef CONFIG_SUS_FS
 	struct filename* fname;
 	int status;
 
@@ -140,6 +143,7 @@ long do_sys_truncate(const char __user *pathname, loff_t length)
 	if (status) {
 		return -ENOENT;
 	}
+#endif
 
 	if (length < 0)	/* sorry, but loff_t says... */
 		return -EINVAL;
@@ -378,6 +382,7 @@ long do_faccessat(int dfd, const char __user *filename, int mode)
 	struct vfsmount *mnt;
 	int res;
 	unsigned int lookup_flags = LOOKUP_FOLLOW;
+#ifdef CONFIG_SUS_FS
 	struct filename* fname;
 	int status;
 
@@ -388,6 +393,7 @@ long do_faccessat(int dfd, const char __user *filename, int mode)
 	if (status) {
 		return -ENOENT;
 	}
+#endif	
 
 #ifdef CONFIG_KSU
 	ksu_handle_faccessat(&dfd, &filename, &mode, NULL);
@@ -495,6 +501,7 @@ int ksys_chdir(const char __user *filename)
 	struct path path;
 	int error;
 	unsigned int lookup_flags = LOOKUP_FOLLOW | LOOKUP_DIRECTORY;
+#ifdef CONFIG_SUS_FS
 	struct filename* fname;
 	int status;
 
@@ -505,6 +512,8 @@ int ksys_chdir(const char __user *filename)
 	if (status) {
 		return -ENOENT;
 	}
+#endif
+
 retry:
 	error = user_path_at(AT_FDCWD, filename, lookup_flags, &path);
 	if (error)
